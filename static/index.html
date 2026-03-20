@@ -14,39 +14,89 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 
     <style>
-        /* 左右分栏布局 */
-        body {
-            display: flex;
-            height: 100vh;
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-        /* 左侧输入区 */
-        #editor {
-            width: 50%;
-            padding: 20px;
-            border: none;
-            border-right: 2px solid #eaecef;
-            resize: none;
-            outline: none;
-            font-family: monospace;
-            font-size: 16px;
-            background-color: #f6f8fa;
-        }
-        /* 右侧预览区 */
-        #preview {
-            width: 50%;
-            padding: 20px;
-            overflow-y: auto;
-            background-color: white;
-        }
+        body { display: flex; height: 100vh; margin: 0; font-family: sans-serif; }
+        #editor { width: 50%; padding: 20px; border: none; border-right: 2px solid #eaecef; resize: none; outline: none; font-family: monospace; font-size: 16px; background-color: #f6f8fa; }
+        #preview { width: 50%; padding: 20px; overflow-y: auto; background-color: white; }
     </style>
 </head>
 <body>
     <textarea id="editor" placeholder="在此输入 Markdown 文本..."></textarea>
     <div id="preview">
-        <h3>预览区已就位</h3>
-        <p>Day 4 任务：前端页面与扩展语法支持准备完毕！</p >
+        <h3>🚀 华科大 Markdown 预览引擎已就位</h3>
+        <p>在左侧输入内容，体验实时渲染与同步滚动！</p >
     </div>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+
+        // ==========================================
+        // 任务 1：实时监听输入并发送给后端 (Day 4/5 联调)
+        // ==========================================
+        editor.addEventListener('input', async () => {
+            const text = editor.value;
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                const data = await response.json();
+                preview.innerHTML = data.html;
+
+                // 重新触发高亮和公式渲染
+                document.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
+                if (window.MathJax) {
+                    MathJax.typesetPromise([preview]).catch((err) => console.log(err));
+                }
+            } catch (error) {
+                console.error("后端请求失败:", error);
+            }
+        });
+
+        // ==========================================
+        // 任务 2：基于元素的精准同步滚动 (Day 5 终极任务)
+        // ==========================================
+        let isSyncingLeft = false;
+        let isSyncingRight = false;
+
+        editor.addEventListener('scroll', () => {
+            if (isSyncingLeft) { isSyncingLeft = false; return; }
+            isSyncingRight = true;
+
+            const editorScrollHeight = editor.scrollHeight - editor.clientHeight;
+            if (editorScrollHeight <= 0) return;
+            const scrollPercentage = editor.scrollTop / editorScrollHeight;
+
+            const elements = preview.children;
+            if (elements.length === 0) return;
+
+            const targetIndex = Math.floor(scrollPercentage * elements.length);
+            let targetElement = elements[targetIndex];
+
+            if (scrollPercentage > 0.99) {
+                preview.scrollTop = preview.scrollHeight - preview.clientHeight;
+            } else if (targetElement) {
+                preview.scrollTo({
+                    top: targetElement.offsetTop - preview.offsetTop,
+                    behavior: 'smooth'
+                });
+            }
+        });
+
+        preview.addEventListener('scroll', () => {
+            if (isSyncingRight) { isSyncingRight = false; return; }
+            isSyncingLeft = true;
+            
+            const previewScrollHeight = preview.scrollHeight - preview.clientHeight;
+            if (previewScrollHeight <= 0) return;
+            const scrollPercentage = preview.scrollTop / previewScrollHeight;
+            
+            editor.scrollTo({
+                top: scrollPercentage * (editor.scrollHeight - editor.clientHeight),
+                behavior: 'smooth'
+            });
+        });
+    </script>
 </body>
 </html>
