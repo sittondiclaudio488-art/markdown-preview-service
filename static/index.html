@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>HUST Markdown 预览器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <script>
+        MathJax = {
+          tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+    <style>
+        /* 左右分栏布局 */
+        body {
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        /* 左侧输入区 */
+        #editor {
+            width: 50%;
+            padding: 20px;
+            border: none;
+            border-right: 2px solid #eaecef;
+            resize: none;
+            outline: none;
+            font-family: monospace;
+            font-size: 16px;
+            background-color: #f6f8fa;
+        }
+        /* 右侧预览区 */
+        #preview {
+            width: 50%;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <textarea id="editor" placeholder="在此输入 Markdown 文本..."></textarea>
+    <div id="preview">
+        <h3>预览区已就位</h3>
+        <p>Day 4 任务：前端页面与扩展语法支持准备完毕！</p >
+    </div>
+</body>
+</html>
